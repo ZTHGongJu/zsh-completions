@@ -49,7 +49,7 @@ _node_files() {
     fi
   done
 
-  _files -g "*.(js|mjs|ts|mts)"
+  _files -g "*.(js|mjs|ts|mts|cjs|cts)"
 }
 
 _node_args() {
