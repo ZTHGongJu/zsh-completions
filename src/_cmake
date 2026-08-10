@@ -166,6 +166,7 @@ _cmake_build_presets() {
 (( $+functions[_cmake_json_field] )) ||
 _cmake_json_field() {
   local json="$1" key="$2"
+  local -a match mbegin mend
   # Non-greedy match of:  "key" <ws> : <ws> " value "
   if [[ $json =~ "\"$key\"[[:space:]]*:[[:space:]]*\"([^\"]*)\"" ]]; then
     print -r -- "$match[1]"
@@ -213,6 +214,7 @@ _cmake_json_inherited_field() {
   fi
 
   local parent
+  local -a match mbegin mend
   if [[ $block =~ '"inherits"[[:space:]]*:[[:space:]]*\[([^]]*)\]' ]]; then
     for parent in ${(s:,:)match[1]}; do
       parent=${parent//[\"[:space:]]/}
