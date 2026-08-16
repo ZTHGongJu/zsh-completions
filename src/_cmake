@@ -614,6 +614,15 @@ _cmake_define_property_names() {
   local alternatives=(
     'common-property-names:common property name:_cmake_define_common_property_names -qS='
   )
+
+  # --find-package (cmake's legacy pkg-config-like mode) requires
+  # -DNAME=, -DLANGUAGE=, -DCOMPILER_ID= and -DMODE= to be set, see
+  # Modules/CMakeFindPackageMode.cmake. Suggest them whenever
+  # --find-package is present on the command line.
+  if (( ${words[(I)--find-package]} )); then
+    alternatives+=('find-package-property-names:find-package property name:_cmake_find_package_property_names -qS=')
+  fi
+
   local -A cmake_langs
   zstyle -a ":completion:${curcontext}:" languages cmake_langs
   [[ $#cmake_langs -eq 0 ]] && cmake_langs=('C' 'C' 'CXX' 'C++')
@@ -647,6 +656,21 @@ _cmake_define_lang_property_names() {
   )
 
   _describe -t "${cmake_lang//:/-}-property-names" "${cmake_lang_desc} property name" properties $@[0,-3] && return 0
+}
+
+# ------------------------------------
+# _cmake_find_package_property_names
+# ------------------------------------
+(( $+functions[_cmake_find_package_property_names] )) ||
+_cmake_find_package_property_names() {
+  local -a properties=(
+    'NAME:Name of the package to search for, e.g. JPEG'
+    'LANGUAGE:Language context for the search (C, CXX or Fortran)'
+    'COMPILER_ID:Compiler identification to use, e.g. GNU'
+    'MODE:Search mode (EXIST, COMPILE or LINK)'
+  )
+
+  _describe -t 'find-package-property-names' 'find-package property name' properties "$@"
 }
 
 # -----------------------------------
@@ -709,6 +733,19 @@ _cmake_define_property_values() {
       ;;
     (CMAKE_UNITY_BUILD)
       _wanted booleans expl 'boolean' _cmake_booleans && ret=0
+      ;;
+    (NAME)
+      _message -e package-name 'package name to search for, e.g. JPEG' && ret=0
+      ;;
+    (LANGUAGE)
+      _wanted languages expl 'language' _values 'language' 'C' 'CXX' 'Fortran' && ret=0
+      ;;
+    (COMPILER_ID)
+      _wanted compiler-ids expl 'compiler id' _values 'compiler id' \
+        'GNU' 'Clang' 'AppleClang' 'MSVC' 'Intel' 'IntelLLVM' 'PGI' 'XL' 'Cray' 'Fujitsu' 'SunPro' 'HP' 'Compaq' 'Borland' 'Watcom' && ret=0
+      ;;
+    (MODE)
+      _wanted modes expl 'find-package mode' _values 'mode' 'EXIST' 'COMPILE' 'LINK' && ret=0
       ;;
     (CMAKE_INSTALL_PREFIX)
       _files -/ && ret=0
